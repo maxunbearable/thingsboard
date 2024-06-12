@@ -14,7 +14,7 @@
 /// limitations under the License.
 ///
 
-import { Component, EventEmitter, forwardRef, Input, OnDestroy, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, forwardRef, Input, OnInit, Output } from '@angular/core';
 import {
   ControlValueAccessor,
   FormArray,
@@ -22,8 +22,6 @@ import {
   FormControl,
   FormGroup,
   NG_VALUE_ACCESSOR,
-  UntypedFormControl,
-  ValidatorFn,
   Validators
 } from '@angular/forms';
 import {
@@ -55,8 +53,6 @@ import {
 } from '@shared/components/dialog/json-object-edit-dialog.component';
 import { jsonRequired } from '@shared/components/json-object-edit.component';
 import { deepClone } from '@core/utils';
-import { takeUntil, tap } from "rxjs/operators";
-import { Subject } from "rxjs";
 
 @Component({
   selector: 'tb-gateway-service-rpc-connector',
@@ -70,7 +66,7 @@ import { Subject } from "rxjs";
     }
   ]
 })
-export class GatewayServiceRPCConnectorComponent implements OnInit, OnDestroy, ControlValueAccessor {
+export class GatewayServiceRPCConnectorComponent implements OnInit, ControlValueAccessor {
 
   @Input()
   connectorType: ConnectorType;
@@ -109,7 +105,6 @@ export class GatewayServiceRPCConnectorComponent implements OnInit, OnDestroy, C
 
   private propagateChange = (v: any) => {
   }
-  private destroy$ = new Subject<void>();
 
   constructor(private fb: FormBuilder,
               private dialog: MatDialog,) {
@@ -143,17 +138,6 @@ export class GatewayServiceRPCConnectorComponent implements OnInit, OnDestroy, C
       }
     });
     this.isMQTTWithResponse = this.fb.control(false);
-    this.isMQTTWithResponse.valueChanges.pipe(
-      tap(() => {
-        this.commandForm.get('responseTopicExpression').updateValueAndValidity();
-      }),
-      takeUntil(this.destroy$),
-    ).subscribe();
-  }
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
   }
 
   connectorParamsFormGroupByType(type: ConnectorType): FormGroup {
@@ -164,7 +148,7 @@ export class GatewayServiceRPCConnectorComponent implements OnInit, OnDestroy, C
         formGroup = this.fb.group({
           methodFilter: [null, [Validators.required, Validators.pattern(noLeadTrailSpacesRegex)]],
           requestTopicExpression: [null, [Validators.required, Validators.pattern(noLeadTrailSpacesRegex)]],
-          responseTopicExpression: [null, [this.requiredOnWithResponse(), Validators.pattern(noLeadTrailSpacesRegex)]],
+          responseTopicExpression: [null, [Validators.pattern(noLeadTrailSpacesRegex)]],
           responseTimeout: [null, [Validators.min(10), Validators.pattern(this.numbersOnlyPattern)]],
           valueExpression: [null, [Validators.required, Validators.pattern(noLeadTrailSpacesRegex)]],
         })
@@ -439,17 +423,5 @@ export class GatewayServiceRPCConnectorComponent implements OnInit, OnDestroy, C
       }
       this.commandForm.patchValue(value, {onlySelf: false});
     }
-  }
-
-  private requiredOnWithResponse(): ValidatorFn {
-    return (control: UntypedFormControl) => {
-      const withResponse: boolean = this.isMQTTWithResponse?.value;
-
-      if (withResponse && !control.value) {
-        return { 'required': true };
-      }
-
-      return null;
-    };
   }
 }
