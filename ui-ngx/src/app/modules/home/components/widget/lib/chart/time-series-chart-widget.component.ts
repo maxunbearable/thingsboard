@@ -113,7 +113,7 @@ export class TimeSeriesChartWidgetComponent implements OnInit, OnDestroy, AfterV
           timeSeriesChartKeyDefaultSettings, legendKey.dataKey.settings);
         legendKey.dataKey.hidden = legendKey.dataKey.settings.dataHiddenByDefault;
         if (this.settings.yAxes[legendKey.dataKey.settings.yAxisId]) {
-          this.settings.yAxes[legendKey.dataKey.settings.yAxisId].show = !legendKey.dataKey.settings.dataHiddenByDefault;
+          // this.settings.yAxes[legendKey.dataKey.settings.yAxisId].show = !legendKey.dataKey.settings.dataHiddenByDefault;
         }
       });
       this.legendKeys = this.legendKeys.filter(legendKey => legendKey.dataKey.settings.showInLegend);
